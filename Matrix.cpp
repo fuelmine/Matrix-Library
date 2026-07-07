@@ -17,14 +17,21 @@ size_t Matrix::index(size_t row, size_t column) const{
     return (row * cols_) + column;
 }
 
+Matrix Matrix::identity(size_t n){
+    Matrix I(n, n);
+    for(size_t i{}; i < n; ++i){
+        I(i, i) = 1.0;
+    }
+    return I;
+}
 //All the operator overloading.
 //1. This return the element at (i,j)
-double Matrix::operator()(size_t i, size_t j) const{
-    return matrix[index(i, j)];
+const double& Matrix::operator()(size_t i, size_t j) const{
+    return matrix_[index(i, j)];
 }
 //2. This allow us to put a value at element (i, j)
 double& Matrix::operator()(size_t i, size_t j){
-    return matrix[index(i, j)];
+    return matrix_[index(i, j)];
 }
 //3. The sum of matrices A + B
 Matrix Matrix::operator+(const Matrix &other) const{
@@ -50,7 +57,7 @@ Matrix Matrix::operator-(const Matrix &other) const{
 
     for(size_t i{}; i < rows_; ++i){
         for(size_t j{}; j < cols_; ++j){
-            diff(i, j) = matrix[index(i,j)] - other(i, j);
+            diff(i, j) = matrix_[index(i,j)] - other(i, j);
         }
     }
     return diff;
@@ -126,7 +133,7 @@ double Matrix::trace() const{
 }
 
 //This function gives the determinate of a matrix using the upper triangle matrix.
-double Matrix::determinate() const{
+double Matrix::determinant() const{
     if(!isSquare()){
         throw std::invalid_argument("Matrix must be square");
     }
@@ -141,7 +148,7 @@ double Matrix::determinate() const{
             if(std::abs(A(j, i)) > std::abs(A(pivot, i))) pivot = j;
         }
         if(std::abs(A(pivot, i)) < 1e-12){
-            throw std::runtime_error("Matrix is singular");
+            return 0.0;
         }
         //swap rows
         if(pivot != i){
@@ -224,17 +231,42 @@ std::vector<double> Matrix::solve(const std::vector<double> &b) const{
 }
 
 size_t Matrix::rank() const{
+    Matrix A = *this;
+    size_t rank{};
 
+    for(size_t col{}; col < cols_ && rank < rows_; ++col){
+        size_t pivot = rank;
+
+        for(size_t row{rank + 1}; row < rows_; ++row){
+            if(std::abs(A(row, col)) > std::abs(A(pivot, col))) pivot = row;
+        }
+
+        if(std::abs(A(pivot, col)) < 1e-12) continue;
+
+        if(pivot != rank){
+            for(size_t j{col}; j < cols_; ++j){
+                std::swap(A(rank, j), A(pivot, j));
+            }
+        }
+        for(size_t row = rank + 1; row < rows_; ++row){
+            double factor = A(row, col) / A(rank, col);
+            for (size_t j = col; j < cols_; ++j) {
+                A(row, j) -= factor * A(rank, j);
+            }
+        }
+
+        ++rank;
+    }
+    return rank;
 }
 
 
 int main(){
-    Matrix A(3, 3, {1, 0 , 0,
-                    0, 1 , 0,
-                    0, 0 , 1});
+
+    Matrix A = Matrix::identity(3);
     A.print();
     
-    double det = A.determinate();
+    double det = A.determinant();
     
     std::vector<double> sol = A.solve({1, 2, 3});
     std::cout << "The determiante of identity matrix is: " << det << "\n"; 
