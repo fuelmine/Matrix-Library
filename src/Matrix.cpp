@@ -260,19 +260,17 @@ size_t Matrix::rank() const{
     return rank;
 }
 
-
-int main(){
-
-    Matrix A = Matrix::identity(3);
-    A.print();
-    
-    double det = A.determinant();
-    
-    std::vector<double> sol = A.solve({1, 2, 3});
-    std::cout << "The determiante of identity matrix is: " << det << "\n"; 
-    for(int i = 0; i < sol.size(); ++i){
-        std::cout << sol[i] << "\n";
+std::ostream& operator<<(std::ostream& os, const Matrix& M){
+    for(size_t i{}; i < M.rows_; ++i){
+        os << "[ ";
+        for(size_t j{}; j < M.cols_; ++j){
+            os << M(i, j) << " ";
+        }
+        os << "]";
+        if(i + 1 < M.rows_){
+            os << "\n";
+        }
     }
-
-    return 0;
+    return os;
 }
+

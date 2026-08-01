@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <vector>
 #include <initializer_list>
 
@@ -58,6 +59,8 @@ public:
     //getters for the size of row and columns
     size_t rows() const{return rows_;}
     size_t cols() const{return cols_;}
+    //output function
+    friend std::ostream& operator<<(std::ostream &os, const Matrix &M);
 
 };
 
